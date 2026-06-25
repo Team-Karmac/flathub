@@ -1,6 +1,6 @@
 app-id: io.gitlab.team_karmac1.KarmacDashboard
 runtime: org.kde.Platform
-runtime-version: '6.6'
+runtime-version: '6.9'
 sdk: org.kde.Sdk
 command: karmac
 
@@ -82,11 +82,11 @@ modules:
   - name: charset-normalizer
     buildsystem: simple
     build-commands:
-      - pip3 install --prefix=/app --no-deps charset_normalizer-3.4.7-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+      - pip3 install --prefix=/app --no-deps charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
     sources:
       - type: file
-        url: https://files.pythonhosted.org/packages/a1/fa/f74eb381a7d94ded44739e9d94de18dc5edc9c17fb8c11f0a6890696c0a9/charset_normalizer-3.4.7-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
-        sha256: 2fe249cb4651fd12605b7288b24751d8bfd46d35f12a20b1ba33dea122e690df
+        url: https://files.pythonhosted.org/packages/4b/f8/d0118a2f5f23b02cd166fa385c60f9b0d4f9194f574e2b31cef350ad7223/charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+        sha256: 5649fd1c7bade02f320a462fdefd0b4bd3ce036065836d4f42e0de958038e116
 
   - name: requests
     buildsystem: simple
@@ -118,10 +118,8 @@ modules:
   - name: karmac
     buildsystem: simple
     build-commands:
-      - cd SRC && pip3 install --prefix=/app --no-deps .
+      - cd SRC && pip3 install --prefix=/app --no-deps --no-build-isolation .
       - install -Dm755 SRC/main.py /app/bin/karmac-main.py
-      - printf '#!/bin/bash\nexec python3 /app/bin/karmac-main.py "$@"\n' > /app/bin/karmac
-      - chmod +x /app/bin/karmac
       - install -Dm644 io.gitlab.team_karmac1.KarmacDashboard.desktop /app/share/applications/io.gitlab.team_karmac1.KarmacDashboard.desktop
       - install -Dm644 io.gitlab.team_karmac1.KarmacDashboard.metainfo.xml /app/share/metainfo/io.gitlab.team_karmac1.KarmacDashboard.metainfo.xml
       - install -Dm644 Assets/Karmac_Logo.svg /app/share/icons/hicolor/scalable/apps/io.gitlab.team_karmac1.KarmacDashboard.svg
@@ -129,3 +127,10 @@ modules:
       - type: git
         url: https://gitlab.com/team.karmac1/Karmac-dashboard.git
         branch: main
+      - type: script
+        dest-filename: karmac
+        commands:
+          - export PYTHONPATH=/app/lib/python3.12/site-packages:$PYTHONPATH
+          - exec python3 /app/bin/karmac-main.py "$@"
+    post-install:
+      - install -Dm755 karmac /app/bin/karmac
